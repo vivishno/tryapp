@@ -9,8 +9,8 @@ on:
 #   CLUST_NAME
 #   RESOURCE_GROUP
 env:
-   CLUST_NAME: your-cluster-name               #set this to your kubernetes cluster name 
-   RESOURCE_GROUP: your-resource-group-name    #set this to your resource group name
+   CLUST_NAME: clust1               #set this to your kubernetes cluster name 
+   RESOURCE_GROUP: appchange1    #set this to your resource group name
    HOST_NAME: ${{ github.event.client_payload.data.request.host }}
    REPO_NAME: ${{ github.event.client_payload.data.request.host }}/${{ github.event.client_payload.data.target.repository }}
    REPO_VERSION: ${{ github.event.client_payload.data.target.tag }}
