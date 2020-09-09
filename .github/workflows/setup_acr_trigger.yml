@@ -9,8 +9,8 @@ on:
 #   RESOURCE_GROUP
 #   CONTAINER_REGISTRY_NAME
 env:
- RESOURCE_GROUP: your-resource-group-name       #set this to your resource group name      
- CONTAINER_REGISTRY_NAME: your-registry-name    #set this to your container registry name
+ RESOURCE_GROUP: appchange1       #set this to your resource group name      
+ CONTAINER_REGISTRY_NAME: newreg1    #set this to your container registry name
  
 jobs:
     build-and-deploy:
