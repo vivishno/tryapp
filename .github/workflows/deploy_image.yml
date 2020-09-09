@@ -1,0 +1,61 @@
+name: CI
+on:
+  repository_dispatch:
+    types: [containerregistry-imagepushed]
+    
+# CONFIGURATION
+# Set up the following secrets in your repository:
+#
+#   CLUST_NAME
+#   RESOURCE_GROUP
+env:
+   CLUST_NAME: your-cluster-name               #set this to your kubernetes cluster name 
+   RESOURCE_GROUP: your-resource-group-name    #set this to your resource group name
+   HOST_NAME: ${{ github.event.client_payload.data.request.host }}
+   REPO_NAME: ${{ github.event.client_payload.data.request.host }}/${{ github.event.client_payload.data.target.repository }}
+   REPO_VERSION: ${{ github.event.client_payload.data.target.tag }}
+   IMAGE_NAME: ${{ github.event.client_payload.data.request.host }}/${{ github.event.client_payload.data.target.repository }}:${{ github.event.client_payload.data.target.tag }}
+
+   
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+        
+    #- name: Check tag filter
+     # run: |
+      #  if [ "$repo_version" != "$filter" ]; then echo "incorrect tag filter supplied"; exit 1 ; fi;
+          
+    - name: Set Context for Azure Kubernetes Cluster using azure/aks-set-context@v1 action
+      uses: azure/aks-set-context@v1
+      with:
+        creds: '${{ secrets.AZURE_CREDENTIALS }}' 
+        cluster-name: ${{ env.CLUST_NAME }}
+        resource-group: ${{ env.RESOURCE_GROUP }}
+    
+    - uses: Azure/k8s-create-secret@v1
+      with:
+        container-registry-url: ${{ env.HOST_NAME }}
+        container-registry-username: ${{ secrets.REGISTRY_USERNAME }}
+        container-registry-password: ${{ secrets.REGISTRY_PASSWORD }}
+        secret-name: demo-k8s-secret
+
+    - uses: azure/k8s-bake@v1
+      with:
+        renderEngine: 'helm2'
+        helmChart: './charts/' 
+        overrideFiles: './charts/values.yaml'
+        overrides: |     
+          image.repository: ${{ env.REPO_NAME }}
+          image.tag: ${{ env.REPO_VERSION }}
+        releaseName: test012
+      id: bake
+
+    - uses: Azure/k8s-deploy@v1
+      with:
+        manifests: ${{ steps.bake.outputs.manifestsBundle }}
+        images: |
+          ${{ env.IMAGE_NAME }}
+        imagepullsecrets: |
+          demo-k8s-secret

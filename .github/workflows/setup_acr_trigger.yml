@@ -1,0 +1,37 @@
+on: 
+ push:
+    paths:
+      - '.github/workflows/setup_acr_trigger.yml'  
+        
+# CONFIGURATION
+#
+# 1. Set up the following secrets in your repository:
+#   RESOURCE_GROUP
+#   CONTAINER_REGISTRY_NAME
+env:
+ RESOURCE_GROUP: your-resource-group-name       #set this to your resource group name      
+ CONTAINER_REGISTRY_NAME: your-registry-name    #set this to your container registry name
+ 
+jobs:
+    build-and-deploy:
+        runs-on: ubuntu-latest 
+        steps: 
+        # checkout the repo 
+        - name: 'Checkout GitHub Action'
+          uses: actions/checkout@v2
+          
+                  
+        - name: 'Login via Azure CLI'
+          uses: azure/login@v1
+          with:
+            creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+
+        - name: create subscription
+          uses: azure/CLI@v1 
+          with:
+             azcliversion: 2.9.1
+             inlineScript: |
+                az deployment group create --resource-group ${{ env.RESOURCE_GROUP }} --template-file .cloud/.azure/deploy.json \
+                --parameters .cloud/.azure/deploy.params.json patToken=${{secrets.PATTOKEN}} \
+                containerRegistryName=${{ env.CONTAINER_REGISTRY_NAME }} repo_name=$GITHUB_REPOSITORY
