@@ -8,7 +8,7 @@ on:
 # 1. Set up the following secrets in your repository:
 #   CONTAINER_REGISTRY_NAME
 env:
- CONTAINER_REGISTRY_NAME: your-registry-name  #set this to your container registry name
+ CONTAINER_REGISTRY_NAME: newreg1  #set this to your container registry name
  
 jobs:
     build-and-deploy:
